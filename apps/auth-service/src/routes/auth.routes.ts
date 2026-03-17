@@ -10,10 +10,20 @@ import { prisma } from '@repo/auth-db'
 import { createUserProfile } from '../lib/createUserProfile'
 
 const router: ExpressRouter = Router()
+
 // CREATE TOKEN
+const ACCESS_TOKEN_EXPIRES = '8h'
+const REFRESH_TOKEN_EXPIRES = '7d'
+
 export function issueAccessToken(user: { id: string; role: string }) {
   return jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET!, {
-    expiresIn: '24h',
+    expiresIn: ACCESS_TOKEN_EXPIRES,
+  })
+}
+
+export function issueRefreshToken(user: { id: string }) {
+  return jwt.sign({ sub: user.id }, process.env.JWT_REFRESH_SECRET!, {
+    expiresIn: REFRESH_TOKEN_EXPIRES,
   })
 }
 
@@ -50,11 +60,16 @@ router.post('/login', async (req: Request, res: Response) => {
     role: user.role,
   })
 
+  const refreshToken = issueRefreshToken({
+    id: user.id,
+  })
+
   return res.json({
     id: user.id,
     email: user.email,
     role: user.role,
     accessToken,
+    refreshToken,
   })
 })
 
@@ -91,12 +106,16 @@ router.post('/register', async (req: Request, res: Response) => {
       id: user.id,
       role: user.role,
     })
+    const refreshToken = issueRefreshToken({
+      id: user.id,
+    })
 
     return res.status(201).json({
       id: user.id,
       email: user.email,
       role: user.role,
       accessToken,
+      refreshToken,
     })
   } catch (err) {
     console.error(err)
@@ -136,16 +155,55 @@ router.post('/google', async (req: Request, res: Response) => {
       id: user.id,
       role: user.role,
     })
+    const refreshToken = issueRefreshToken({
+      id: user.id,
+    })
 
     return res.json({
       id: user.id,
       email: user.email,
       role: user.role,
       accessToken,
+      refreshToken,
     })
   } catch (err) {
     console.error('GOOGLE AUTH API ERROR:', err)
     return res.status(500).json({ message: 'Google auth failed' })
+  }
+})
+
+// REFRESH
+router.post('/refresh', async (req: Request, res: Response) => {
+  const { refreshToken } = req.body
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: 'Missing refresh token' })
+  }
+
+  try {
+    const payload = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET!,
+    ) as { sub: string }
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.sub },
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const newAccessToken = issueAccessToken({
+      id: user.id,
+      role: user.role,
+    })
+
+    return res.json({
+      accessToken: newAccessToken,
+    })
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired refresh token' })
   }
 })
 

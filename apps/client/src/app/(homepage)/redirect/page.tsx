@@ -22,5 +22,5 @@ export default async function RedirectPage() {
     redirect('/onboarding')
   }
 
-  redirect('/user')
+  redirect('/dashboard')
 }

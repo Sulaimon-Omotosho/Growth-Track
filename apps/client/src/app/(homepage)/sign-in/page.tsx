@@ -1,9 +1,9 @@
-import AuthForm from '@/components/forms/AuthForm'
-import LoginGoogle from '@/components/LoginGoogle'
 import { getServerSession } from 'next-auth'
 import Image from 'next/image'
 import { authOptions } from '../../api/auth/[...nextauth]/route'
 import { redirect } from 'next/navigation'
+import AuthForm from '@/src/components/forms/AuthForm'
+import LoginGoogle from '@/src/components/LoginGoogle'
 
 const SignIn = async () => {
   const session = await getServerSession(authOptions)

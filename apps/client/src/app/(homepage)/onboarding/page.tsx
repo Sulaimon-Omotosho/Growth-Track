@@ -1,8 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../api/auth/[...nextauth]/route'
-import SubmitButton from '@/components/SubmitButton'
-import Onboarding from '@/components/forms/Onboarding'
 import { redirect } from 'next/navigation'
+import Onboarding from '@/src/components/forms/Onboarding'
 
 export default async function OnboardingPage() {
   const session = await getServerSession(authOptions)

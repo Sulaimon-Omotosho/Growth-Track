@@ -5,12 +5,14 @@ import z from 'zod'
 declare module 'next-auth' {
   interface Session {
     accessToken?: string
+    refreshToken?: string
     error?: string
     user: {
       id: string
       email?: string | null
       role: string
       accessToken: string
+      refreshToken: string
     } & DefaultSession['user']
   }
 
@@ -18,6 +20,7 @@ declare module 'next-auth' {
     id: string
     role: string
     accessToken: string
+    refreshToken: string
   }
 }
 
@@ -26,6 +29,7 @@ declare module 'next-auth/jwt' {
     id?: string
     role?: string
     accessToken?: string
+    refreshToken?: string
   }
 }
 

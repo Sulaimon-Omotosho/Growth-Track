@@ -4,6 +4,44 @@ import Google from 'next-auth/providers/google'
 
 const authUrl = process.env.AUTH_SERVICE_URL!
 
+async function refreshAccessToken(token: any) {
+  try {
+    const res = await fetch(`${authUrl}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        refreshToken: token.refreshToken,
+      }),
+    })
+
+    const text = await res.text()
+    console.log('REFRESH RESPONSE:', text)
+
+    if (!res.ok) {
+      return {
+        ...token,
+        error: 'RefreshAccessTokenError',
+      }
+    }
+
+    const data = JSON.parse(text)
+    // const data = await res.json()
+
+    return {
+      ...token,
+      accessToken: data.accessToken,
+      accessTokenExpires: Date.now() + 8 * 60 * 60 * 1000,
+    }
+  } catch (error) {
+    console.error('REFRESH ERROR', error)
+
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+    }
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   // debug: true,
@@ -62,6 +100,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             role: user.role,
             accessToken: user.accessToken,
+            refreshToken: user.refreshToken,
           }
         } catch (error) {
           console.error('Auth Login Failed:', error)
@@ -98,6 +137,7 @@ export const authOptions: NextAuthOptions = {
           user.id = apiUser.id
           user.role = apiUser.role
           user.accessToken = apiUser.accessToken
+          user.refreshToken = apiUser.refreshToken
         } catch (err) {
           console.error('GOOGLE AUTH FETCH FAILED:', err)
           return false
@@ -106,15 +146,33 @@ export const authOptions: NextAuthOptions = {
       return true
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.email = user.email
-        token.role = (user as any).role
-        token.accessToken = (user as any).accessToken
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          accessTokenExpires: Date.now() + 8 * 60 * 60 * 1000,
+        }
       }
 
-      return token
+      // If Token Valid Return It
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token
+      }
+
+      // If RefreshToken Missing, Force Logout
+      if (!token.refreshToken) {
+        return {
+          ...token,
+          error: 'RefreshAccessTokenError',
+        }
+      }
+
+      // Token Expired, Refresh It
+      return await refreshAccessToken(token)
     },
 
     async session({ session, token }) {
@@ -124,6 +182,7 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string
         session.accessToken = token.accessToken as string
         session.error = token.error as string | undefined
+        ;(session as any).refreshToken = token.refreshToken
       }
       return session
     },
