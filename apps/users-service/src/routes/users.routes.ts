@@ -82,40 +82,47 @@ router.get('/:email', async (req: Request, res: Response) => {
 })
 
 // Search A User
-router.get('/searchUser', authenticate, async (req: AuthRequest, res) => {
+router.get('/searchUser', async (req: AuthRequest, res) => {
+  // router.get('/searchUser', authenticate, async (req: AuthRequest, res) => {
   const q = (req.query.q as string) || ''
+  console.log('Query:', q)
 
-  if (req.user!.role !== 'PASTOR') {
-    return res.status(403).json({ message: 'Forbidden' })
+  // if (req.user!.role !== 'PASTOR') {
+  //   return res.status(403).json({ message: 'Forbidden' })
+  // }
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            firstName: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+          {
+            lastName: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+      take: 10,
+    })
+
+    res.json(users)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
   }
-
-  const users = await prisma.user.findMany({
-    where: {
-      OR: [
-        {
-          firstName: {
-            contains: q,
-            mode: 'insensitive',
-          },
-        },
-        {
-          lastName: {
-            contains: q,
-            mode: 'insensitive',
-          },
-        },
-      ],
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-    },
-    take: 10,
-  })
-
-  res.json(users)
 })
 
 // Get All Users
