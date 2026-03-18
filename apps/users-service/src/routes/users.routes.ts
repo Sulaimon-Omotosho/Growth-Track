@@ -9,6 +9,44 @@ import { authenticate, AuthRequest } from '../middleware/auth.middleware.js'
 
 const router: ExpressRouter = Router()
 
+// Search A User
+router.get('/searchUser', async (req: Request, res: Response) => {
+  const q = (req.query.q as string) || ''
+
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            firstName: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+          {
+            lastName: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+      take: 10,
+    })
+
+    res.json(users)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
 // Get Current User
 router.get('/me', authenticate, async (req: AuthRequest, res) => {
   const userId = req.user?.id
@@ -68,6 +106,7 @@ router.get('/:email', async (req: Request, res: Response) => {
       username: true,
       firstName: true,
       lastName: true,
+      phone: true,
       image: true,
       role: true,
       createdAt: true,
@@ -79,50 +118,6 @@ router.get('/:email', async (req: Request, res: Response) => {
   }
 
   return res.json(user)
-})
-
-// Search A User
-router.get('/searchUser', async (req: AuthRequest, res) => {
-  // router.get('/searchUser', authenticate, async (req: AuthRequest, res) => {
-  const q = (req.query.q as string) || ''
-  console.log('Query:', q)
-
-  // if (req.user!.role !== 'PASTOR') {
-  //   return res.status(403).json({ message: 'Forbidden' })
-  // }
-
-  try {
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          {
-            firstName: {
-              contains: q,
-              mode: 'insensitive',
-            },
-          },
-          {
-            lastName: {
-              contains: q,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-      },
-      take: 10,
-    })
-
-    res.json(users)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: 'Server error' })
-  }
 })
 
 // Get All Users
@@ -244,7 +239,14 @@ router.post('/newUser', async (req: Request, res: Response) => {
 
 router.get('/debug/users', async (req, res) => {
   const users = await prisma.user.findMany({
-    select: { id: true, username: true, email: true, role: true },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      firstName: true,
+      lastName: true,
+    },
   })
   res.json(users)
 })

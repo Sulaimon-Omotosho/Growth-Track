@@ -75,12 +75,13 @@ model User {
 
   growthRecord GrowthRecord?
 
-  leadsDistrict   District?   @relation("DistrictLeader")
-  leadsCommunity  Community?  @relation("CommunityLeader")
-  leadsZone       Zone?       @relation("ZonalLeader")
-  leadsCell       Cell?       @relation("CellLeader")
-  leadsChurchTeam ChurchTeam? @relation("TeamPastor")
-  leadsDepartment Department? @relation("HOD")
+
+  districtsLed District[] @relation("DistrictLeader")
+  leadsCommunity  Community[]  @relation("CommunityLeader")
+  leadsZone       Zone[]       @relation("ZonalLeader")
+  leadsCell       Cell[]       @relation("CellLeader")
+  leadsChurchTeam ChurchTeam[] @relation("TeamPastor")
+  leadsDepartment Department[] @relation("HOD")
 
   district    District?    @relation("DistrictUsers", fields: [districtId], references: [id])
   community   Community?   @relation(fields: [communityId], references: [id])
@@ -137,7 +138,7 @@ model District {
   id   String @id @default(uuid())
   name String
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("DistrictLeader", fields: [leaderId], references: [id])
 
   communities Community[]
@@ -152,7 +153,7 @@ model Community {
   name       String
   districtId String
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("CommunityLeader", fields: [leaderId], references: [id])
 
   district District @relation(fields: [districtId], references: [id])
@@ -169,7 +170,7 @@ model Zone {
   name        String
   communityId String
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("ZonalLeader", fields: [leaderId], references: [id])
 
   community Community @relation(fields: [communityId], references: [id])
@@ -186,7 +187,7 @@ model Cell {
   zoneId      String
   communityId String
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("CellLeader", fields: [leaderId], references: [id])
 
   community Community @relation(fields: [communityId], references: [id])
@@ -203,7 +204,7 @@ model ChurchTeam {
   name        String
   description String?
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("TeamPastor", fields: [leaderId], references: [id])
 
   departments Department[]
@@ -219,7 +220,7 @@ model Department {
   email        String?
   description  String?
 
-  leaderId String? @unique
+  leaderId String? 
   leader   User?   @relation("HOD", fields: [leaderId], references: [id])
 
   churchTeam ChurchTeam @relation(fields: [churchTeamId], references: [id])

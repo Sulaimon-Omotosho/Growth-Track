@@ -18,3 +18,21 @@ export const ChurchTeamSchema = z.object({
     .optional(),
   // leaderId: z.string().min(1, { message: 'Select a leader!' }),
 })
+
+export const DepartmentSchema = z.object({
+  name: z.string().min(2, { message: 'Name of Team needed!' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  churchTeamId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  email: z.email().optional(),
+  description: z
+    .string()
+    .trim()
+    .max(30, { message: 'Short description not more than 30!' })
+    .optional(),
+  // leaderId: z.string().min(1, { message: 'Select a leader!' }),
+})
+
+export const DistrictSchema = z.object({
+  name: z.string().min(2, { message: 'Name of Team needed!' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+})
