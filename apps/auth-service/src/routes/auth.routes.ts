@@ -12,8 +12,11 @@ import { createUserProfile } from '../lib/createUserProfile'
 const router: ExpressRouter = Router()
 
 // CREATE TOKEN
-const ACCESS_TOKEN_EXPIRES = '8h'
-const REFRESH_TOKEN_EXPIRES = '7d'
+// const ACCESS_TOKEN_EXPIRES = 60
+const ACCESS_TOKEN_EXPIRES = 8 * 60 * 60
+const REFRESH_TOKEN_EXPIRES = 60
+// const ACCESS_TOKEN_EXPIRES = '8h'
+// const REFRESH_TOKEN_EXPIRES = '7d'
 
 export function issueAccessToken(user: { id: string; role: string }) {
   return jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET!, {
@@ -70,6 +73,8 @@ router.post('/login', async (req: Request, res: Response) => {
     role: user.role,
     accessToken,
     refreshToken,
+    accessTokenExpiresIn: ACCESS_TOKEN_EXPIRES,
+    refreshTokenExpiresIn: REFRESH_TOKEN_EXPIRES,
   })
 })
 
@@ -201,6 +206,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
     return res.json({
       accessToken: newAccessToken,
+      accessTokenExpiresIn: ACCESS_TOKEN_EXPIRES,
     })
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired refresh token' })

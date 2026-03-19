@@ -35,6 +35,58 @@ router.get('/searchTeam', async (req: Request, res: Response) => {
   }
 })
 
+// Search A District
+router.get('/searchDistrict', async (req: Request, res: Response) => {
+  const q = (req.query.q as string) || ''
+
+  try {
+    const district = await prisma.district.findMany({
+      where: {
+        name: {
+          contains: q,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      take: 10,
+    })
+
+    res.json(district)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// Search A Community
+router.get('/searchCommunities', async (req: Request, res: Response) => {
+  const q = (req.query.q as string) || ''
+
+  try {
+    const community = await prisma.community.findMany({
+      where: {
+        name: {
+          contains: q,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      take: 10,
+    })
+
+    res.json(community)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
 // Create A New Team
 router.post('/addTeam', async (req: Request, res: Response) => {
   const { name, leaderId, description } = req.body
@@ -131,6 +183,80 @@ router.post('/addDistrict', async (req: Request, res: Response) => {
     })
 
     res.status(201).json(district)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server Error' })
+  }
+})
+
+// Add A Community
+router.post('/addCommunity', async (req: Request, res: Response) => {
+  const { name, leaderId, districtId } = req.body
+
+  if (!name || !leaderId) {
+    return res
+      .status(400)
+      .json({ message: 'Community needs name, district and pastor' })
+  }
+
+  try {
+    const pastor = await prisma.user.findUnique({ where: { id: leaderId } })
+    if (!pastor) {
+      return res.status(404).json({ message: 'Pastor not found' })
+    }
+    const district = await prisma.district.findUnique({
+      where: { id: districtId },
+    })
+    if (!district) {
+      return res.status(404).json({ message: 'District not found' })
+    }
+
+    const community = await prisma.community.create({
+      data: {
+        name,
+        leaderId,
+        districtId,
+      },
+    })
+
+    res.status(201).json(community)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server Error' })
+  }
+})
+
+// Add A Zone
+router.post('/addZone', async (req: Request, res: Response) => {
+  const { name, leaderId, communityId } = req.body
+
+  if (!name || !leaderId) {
+    return res
+      .status(400)
+      .json({ message: 'Zone needs name, community and pastor' })
+  }
+
+  try {
+    const pastor = await prisma.user.findUnique({ where: { id: leaderId } })
+    if (!pastor) {
+      return res.status(404).json({ message: 'Pastor not found' })
+    }
+    const community = await prisma.community.findUnique({
+      where: { id: communityId },
+    })
+    if (!community) {
+      return res.status(404).json({ message: 'Community not found' })
+    }
+
+    const zone = await prisma.zone.create({
+      data: {
+        name,
+        leaderId,
+        communityId,
+      },
+    })
+
+    res.status(201).json(zone)
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server Error' })

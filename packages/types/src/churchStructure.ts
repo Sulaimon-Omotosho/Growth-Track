@@ -16,7 +16,6 @@ export const ChurchTeamSchema = z.object({
     .trim()
     .max(30, { message: 'Short description not more than 30!' })
     .optional(),
-  // leaderId: z.string().min(1, { message: 'Select a leader!' }),
 })
 
 export const DepartmentSchema = z.object({
@@ -29,10 +28,23 @@ export const DepartmentSchema = z.object({
     .trim()
     .max(30, { message: 'Short description not more than 30!' })
     .optional(),
-  // leaderId: z.string().min(1, { message: 'Select a leader!' }),
 })
 
 export const DistrictSchema = z.object({
   name: z.string().min(2, { message: 'Name of Team needed!' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this District' }),
+})
+
+export const CommunitySchema = z.object({
+  name: z.string().min(2, { message: 'Name of Team needed!' }),
   leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  districtId: z
+    .string()
+    .min(1, { message: 'District needed for this Community' }),
+})
+
+export const ZoneSchema = z.object({
+  name: z.string().min(2, { message: 'Name of Team needed!' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  communityId: z.string().min(1, { message: 'Community needed for this Zone' }),
 })
