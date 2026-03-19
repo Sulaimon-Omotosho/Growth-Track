@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '../utils/theme-provider'
-import Providers from '../utils/providers'
-// import { SessionWatcher } from '@/utils/SessionWatcher'
+import Providers from '../lib/Providers'
+import AuthGuard from '../lib/AuthGuard'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,15 +33,16 @@ export default async function RootLayout({
       >
         <div className=''>
           <Providers>
-            {/* <SessionWatcher /> */}
-            <ThemeProvider
-              attribute='class'
-              defaultTheme='system'
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-            </ThemeProvider>
+            <AuthGuard>
+              <ThemeProvider
+                attribute='class'
+                defaultTheme='system'
+                enableSystem
+                disableTransitionOnChange
+              >
+                {children}
+              </ThemeProvider>
+            </AuthGuard>
           </Providers>
         </div>
       </body>

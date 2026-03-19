@@ -1,9 +1,8 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../auth/[...nextauth]/route'
 import { NextResponse } from 'next/server'
+import { getCachedSession } from '@/src/lib/auth'
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
 
   if (!session?.accessToken) {
     return NextResponse.redirect(
@@ -36,7 +35,7 @@ export async function GET() {
 }
 
 export async function PATCH(req: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
 
   if (!session?.accessToken) {
     return new Response('Unauthorized', { status: 401 })

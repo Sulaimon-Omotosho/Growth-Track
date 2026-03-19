@@ -12,11 +12,10 @@ import { createUserProfile } from '../lib/createUserProfile'
 const router: ExpressRouter = Router()
 
 // CREATE TOKEN
-// const ACCESS_TOKEN_EXPIRES = 60
 const ACCESS_TOKEN_EXPIRES = 8 * 60 * 60
-const REFRESH_TOKEN_EXPIRES = 60
+const REFRESH_TOKEN_EXPIRES = 3 * 24 * 60 * 60
 // const ACCESS_TOKEN_EXPIRES = '8h'
-// const REFRESH_TOKEN_EXPIRES = '7d'
+// const REFRESH_TOKEN_EXPIRES = '3d'
 
 export function issueAccessToken(user: { id: string; role: string }) {
   return jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET!, {

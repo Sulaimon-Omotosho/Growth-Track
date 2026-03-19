@@ -1,5 +1,5 @@
 import { cache } from 'react'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '../app/api/auth/[...nextauth]/route'
 
 export const getCachedSession = cache(() => getServerSession(authOptions))

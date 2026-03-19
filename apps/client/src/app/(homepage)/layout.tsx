@@ -1,10 +1,7 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../api/auth/[...nextauth]/route'
 import { User } from '@repo/types'
 import Navbar from '@/src/components/Navbar'
 import Footer from '@/src/components/Footer'
-import Providers from '@/src/utils/providers'
-import AuthGuard from '@/src/utils/AuthGuard'
+import { getCachedSession } from '@/src/lib/auth'
 // import './globals.css'
 
 export default async function RootLayout({
@@ -12,7 +9,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
   let user: User | null = null
 
   try {
@@ -35,18 +32,14 @@ export default async function RootLayout({
     console.error('User fetch error:', error)
     user = null
   }
-  console.log('Refresh Token:', session?.refreshToken)
-  console.log('Access Token:', session?.accessToken)
+  // console.log('Refresh Token:', session?.refreshToken)
+  // console.log('Access Token:', session?.accessToken)
 
   return (
-    <Providers>
-      <AuthGuard>
-        <div className=''>
-          <Navbar user={user as User} />
-          {children}
-          <Footer />
-        </div>
-      </AuthGuard>
-    </Providers>
+    <div className=''>
+      <Navbar user={user as User} />
+      {children}
+      <Footer />
+    </div>
   )
 }

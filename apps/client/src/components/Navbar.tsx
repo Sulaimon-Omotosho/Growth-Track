@@ -4,11 +4,11 @@ import { Home, LogIn, UserIcon } from 'lucide-react'
 import { getServerSession } from 'next-auth'
 import Theme from './Theme'
 import Profile from './Profile'
-import { authOptions } from '@/src/app/api/auth/[...nextauth]/route'
 import { User } from '@repo/types'
+import { getCachedSession } from '../lib/auth'
 
 const Navbar = async ({ user }: { user?: User }) => {
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
 
   return (
     <nav className='w-full bg-white dark:bg-black border-b border-gray-400 shadow-3xl fixed z-10 md:px-10 lg:px-30'>

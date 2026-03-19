@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { authOptions } from '../api/auth/[...nextauth]/route'
 import { UserProvider } from '@/src/utils/userContext'
 import { SidebarProvider } from '@/src/components/ui/sidebar'
 import { AppSidebar } from '@/src/components/dashboard/AppSidebar'
 import Navbar from '@/src/components/dashboard/Navbar'
 import { User } from '@repo/types'
+import { getCachedSession } from '@/src/lib/auth'
 
 export default async function RootLayout({
   children,
@@ -15,7 +14,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies()
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true'
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
   let user: User | null = null
 
   if (!session) {
@@ -35,38 +34,21 @@ export default async function RootLayout({
         user = await res.json()
       } else {
         console.error('Failed to fetch user:', res.status)
-        // user = null
       }
     }
   } catch (error) {
     console.error('User fetch error:', error)
   }
 
-  // const res = await fetch(`${process.env.USERS_SERVICE_URL}/users/me`, {
-  //   headers: {
-  //     Authorization: `Bearer ${session.accessToken}`,
-  //   },
-  //   cache: 'no-store',
-  // })
-
-  // if (!res.ok) {
-  //   throw new Error('Failed to load dashboard')
-  // }
-
-  // const user = await res.json()
-
   return (
     <div className='h-full'>
-      {/* <AuthGuard> */}
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar user={user} />
         <main className='w-full'>
           <Navbar user={user as User} />
-          {/* {children} */}
           <UserProvider user={user as User}>{children}</UserProvider>
         </main>
       </SidebarProvider>
-      {/* </AuthGuard> */}
     </div>
   )
 }

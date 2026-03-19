@@ -1,10 +1,9 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../api/auth/[...nextauth]/route'
 import { redirect } from 'next/navigation'
 import Onboarding from '@/src/components/forms/Onboarding'
+import { getCachedSession } from '@/src/lib/auth'
 
 export default async function OnboardingPage() {
-  const session = await getServerSession(authOptions)
+  const session = await getCachedSession()
 
   if (!session) redirect('/sign-in')
 

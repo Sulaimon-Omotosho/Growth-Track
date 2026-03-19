@@ -14,8 +14,7 @@ async function refreshAccessToken(token: any) {
       }),
     })
 
-    const text = await res.text()
-    console.log('REFRESH RESPONSE:', text)
+    const data = await res.json()
 
     if (!res.ok) {
       return {
@@ -24,17 +23,17 @@ async function refreshAccessToken(token: any) {
       }
     }
 
-    const data = JSON.parse(text)
-    // const data = await res.json()
+    // console.log('REFRESH RESPONSE:', data)
 
     return {
       ...token,
       accessToken: data.accessToken,
-      accessTokenExpires: Date.now() + 8 * 60 * 60 * 1000,
+      accessTokenExpires: Date.now() + data.accessTokenExpiresIn * 1000,
+      tokenVersion: Date.now(),
+      error: undefined,
     }
   } catch (error) {
     console.error('REFRESH ERROR', error)
-
     return {
       ...token,
       error: 'RefreshAccessTokenError',
@@ -44,8 +43,6 @@ async function refreshAccessToken(token: any) {
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
-  // debug: true,
-  // adapter: PrismaAdapter
   session: { strategy: 'jwt' },
   pages: {
     signIn: '/sign-in',
@@ -71,8 +68,6 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials) {
-        // console.log('CREDENTIALS:', credentials)
-
         try {
           const res = await fetch(`${authUrl}/auth/login`, {
             method: 'POST',
@@ -101,6 +96,8 @@ export const authOptions: NextAuthOptions = {
             role: user.role,
             accessToken: user.accessToken,
             refreshToken: user.refreshToken,
+            accessTokenExpiresIn: user.accessTokenExpiresIn,
+            refreshTokenExpiresIn: user.refreshTokenExpiresIn,
           }
         } catch (error) {
           console.error('Auth Login Failed:', error)
@@ -138,6 +135,7 @@ export const authOptions: NextAuthOptions = {
           user.role = apiUser.role
           user.accessToken = apiUser.accessToken
           user.refreshToken = apiUser.refreshToken
+          user.accessTokenExpiresIn = apiUser.accessTokenExpiresIn
         } catch (err) {
           console.error('GOOGLE AUTH FETCH FAILED:', err)
           return false
@@ -149,12 +147,30 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         return {
+          ...token,
           id: user.id,
           email: user.email,
           role: user.role,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
-          accessTokenExpires: Date.now() + 8 * 60 * 60 * 1000,
+          accessTokenExpires: Date.now() + user.accessTokenExpiresIn * 1000,
+          refreshTokenExpires: Date.now() + user.refreshTokenExpiresIn * 1000,
+          sessionStart: Date.now(),
+          error: undefined,
+        }
+      }
+
+      // console.log('JWT TOKEN:', token)
+      // console.log('NOW:', Date.now())
+      // console.log('EXPIRES:', token.accessTokenExpires)
+      // console.log('Refresh EXPIRES:', token.refreshTokenExpires)
+
+      // Refresh Token Expired LOGOUT
+      if (Date.now() > (token.refreshTokenExpires as number)) {
+        console.log('REFRESH TOKEN EXPIRED → FORCE LOGOUT')
+        return {
+          ...token,
+          error: 'RefreshTokenExpired',
         }
       }
 
@@ -163,16 +179,21 @@ export const authOptions: NextAuthOptions = {
         return token
       }
 
-      // If RefreshToken Missing, Force Logout
-      if (!token.refreshToken) {
-        return {
-          ...token,
-          error: 'RefreshAccessTokenError',
-        }
-      }
+      const refreshedToken = await refreshAccessToken(token)
+      // console.log('New Token:', refreshedToken)
 
-      // Token Expired, Refresh It
-      return await refreshAccessToken(token)
+      return {
+        ...token,
+        // ...refreshedToken,
+        id: refreshedToken.id,
+        email: refreshedToken.email,
+        role: refreshedToken.role,
+        accessToken: refreshedToken.accessToken,
+        refreshToken: refreshedToken.refreshToken,
+        accessTokenExpires: refreshedToken.accessTokenExpires,
+        tokenVersion: Date.now(),
+        error: undefined,
+      }
     },
 
     async session({ session, token }) {
@@ -184,19 +205,11 @@ export const authOptions: NextAuthOptions = {
         session.error = token.error as string | undefined
         ;(session as any).refreshToken = token.refreshToken
       }
+      // console.log('session:', session)
+
       return session
     },
   },
-  // events: {
-  //   async createUser({ user }) {
-  //     await prisma.user.update({
-  //       where: { id: user.id },
-  //       data: {
-  //         role: 'MEMBER',
-  //       },
-  //     })
-  //   },
-  // },
 }
 
 const handler = NextAuth(authOptions)
