@@ -9,10 +9,11 @@ export interface User {
   id: string
   firstName: string
   lastName: string
-  username: string
+  username?: string
   email?: string
   phone?: string
-  gender?: 'MALE' | 'FEMALE'
+  gender?: string
+  // gender?: 'MALE' | 'FEMALE'
   dob?: Date
   about?: string
   role: string

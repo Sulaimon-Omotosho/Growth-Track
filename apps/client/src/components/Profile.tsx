@@ -20,7 +20,6 @@ const Profile = ({ image, role }: { image: string; role: string }) => {
         <DropdownMenuTrigger>
           <Avatar>
             <AvatarImage src={image} />
-            {/* <AvatarImage src='https://avatars.githubusercontent.com/u/1486366' /> */}
 
             <AvatarFallback>
               <User className='h-6 w-6 m-2' />

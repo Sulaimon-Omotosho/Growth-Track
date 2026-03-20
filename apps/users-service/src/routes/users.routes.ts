@@ -49,14 +49,14 @@ router.get('/searchUser', async (req: Request, res: Response) => {
 
 // Get Current User
 router.get('/me', authenticate, async (req: AuthRequest, res) => {
-  const userId = req.user?.id
+  const authId = req.user?.id
 
-  if (!userId) {
+  if (!authId) {
     return res.status(401).json({ message: 'Unauthenticated' })
   }
 
   const user = await prisma.user.findUnique({
-    where: { authId: userId },
+    where: { authId },
     include: {
       cell: {
         select: {
@@ -90,36 +90,6 @@ router.get('/me', authenticate, async (req: AuthRequest, res) => {
   return res.json(user)
 })
 
-// Get By Email
-router.get('/:email', async (req: Request, res: Response) => {
-  const email = req.params.email as string
-
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required' })
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      firstName: true,
-      lastName: true,
-      phone: true,
-      image: true,
-      role: true,
-      createdAt: true,
-    },
-  })
-
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' })
-  }
-
-  return res.json(user)
-})
-
 // Get All Users
 router.get('/all', authenticate, async (req: AuthRequest, res) => {
   if (req.user!.role !== 'ADMIN') {
@@ -133,54 +103,59 @@ router.get('/all', authenticate, async (req: AuthRequest, res) => {
   res.json(user)
 })
 
-// Get A User
-router.get('/:id', authenticate, async (req: AuthRequest, res) => {
-  if (req.user!.role !== 'ADMIN') {
-    return res.status(403).json({ message: 'Forbidden' })
+// Create A User
+router.post('/newUser', async (req: Request, res: Response) => {
+  const { authId, email, firstName, lastName, image } = req.body
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' })
   }
 
-  const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
-
-  if (!userId) {
-    return res.status(400).json({ message: 'User ID is required' })
+  const existingUser = await prisma.user.findUnique({ where: { email } })
+  if (existingUser) {
+    return res.status(409).json({ message: 'User already exists' })
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const newUser = await prisma.user.create({
+    data: {
+      authId,
+      email,
+      firstName,
+      lastName,
+      image,
+      role: 'MEMBER',
+    },
   })
-
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' })
-  }
-
-  res.json(user)
+  return res
+    .status(200)
+    .json({ message: 'User created in user-db', user: newUser })
 })
 
 // Update Profile
 router.patch('/me', authenticate, async (req: AuthRequest, res) => {
+  const authId = req.user?.id
+
+  if (!authId) {
+    return res.status(401).json({ message: 'Unauthorized' })
+  }
+
+  const { firstName, lastName, username, email, phone, gender, dob, about } =
+    req.body
+
   try {
-    const userId = req.user?.id
-
-    if (!userId) {
-      return res.status(401).json({ message: 'Unauthorized' })
-    }
-
-    const { firstName, lastName, username, email, phone, gender, dob, about } =
-      req.body
-
     // Username uniqueness check
     if (username) {
       const existing = await prisma.user.findUnique({
         where: { username },
       })
 
-      if (existing && existing.authId !== userId) {
+      if (existing && existing.authId !== authId) {
         return res.status(409).json({ message: 'Username already taken' })
       }
     }
 
     const updatedUser = await prisma.user.update({
-      where: { authId: userId },
+      where: { authId },
       data: {
         firstName,
         lastName,
@@ -210,31 +185,34 @@ router.patch('/me', authenticate, async (req: AuthRequest, res) => {
   }
 })
 
-router.post('/newUser', async (req: Request, res: Response) => {
-  const { authId, email, firstName, lastName, image } = req.body
+// Get By Email
+router.get('/byEmail', async (req: Request, res: Response) => {
+  const email = req.params.email as string
 
   if (!email) {
     return res.status(400).json({ message: 'Email is required' })
   }
 
-  const existingUser = await prisma.user.findUnique({ where: { email } })
-  if (existingUser) {
-    return res.status(409).json({ message: 'User already exists' })
-  }
-
-  const newUser = await prisma.user.create({
-    data: {
-      authId,
-      email,
-      firstName,
-      lastName,
-      image,
-      role: 'MEMBER',
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      image: true,
+      role: true,
+      createdAt: true,
     },
   })
-  return res
-    .status(200)
-    .json({ message: 'User created in user-db', user: newUser })
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+
+  return res.json(user)
 })
 
 router.get('/debug/users', async (req, res) => {
@@ -249,6 +227,29 @@ router.get('/debug/users', async (req, res) => {
     },
   })
   res.json(users)
+})
+
+// Get A User
+router.get('/:id', authenticate, async (req: AuthRequest, res) => {
+  if (req.user!.role !== 'ADMIN') {
+    return res.status(403).json({ message: 'Forbidden' })
+  }
+
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id
+
+  if (!id) {
+    return res.status(400).json({ message: 'User ID is required' })
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+  })
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' })
+  }
+
+  res.json(user)
 })
 
 export default router

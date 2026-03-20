@@ -31,13 +31,13 @@ export const DepartmentSchema = z.object({
 })
 
 export const DistrictSchema = z.object({
-  name: z.string().min(2, { message: 'Name of Team needed!' }),
+  name: z.string().min(2, { message: 'Name of District needed!' }),
   leaderId: z.string().min(1, { message: 'Pastor needed for this District' }),
 })
 
 export const CommunitySchema = z.object({
   name: z.string().min(2, { message: 'Name of Team needed!' }),
-  leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this community' }),
   districtId: z
     .string()
     .min(1, { message: 'District needed for this Community' }),
@@ -45,6 +45,13 @@ export const CommunitySchema = z.object({
 
 export const ZoneSchema = z.object({
   name: z.string().min(2, { message: 'Name of Team needed!' }),
-  leaderId: z.string().min(1, { message: 'Pastor needed for this team' }),
+  leaderId: z.string().min(1, { message: 'Pastor needed for this zone' }),
   communityId: z.string().min(1, { message: 'Community needed for this Zone' }),
+})
+
+export const CellSchema = z.object({
+  name: z.string().min(2, { message: 'Name of Team needed!' }),
+  leaderId: z.string().min(1, { message: 'A cell leader is needed' }),
+  zoneId: z.string().min(1, { message: 'Zone needed for this Cell' }),
+  communityId: z.string().min(1, { message: 'Community needed for this Cell' }),
 })

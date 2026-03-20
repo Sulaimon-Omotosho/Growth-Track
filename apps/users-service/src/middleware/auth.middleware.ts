@@ -36,7 +36,8 @@ export const authenticate = (
     }
 
     next()
-  } catch {
+  } catch (err) {
+    console.error('JWT verification failed:', err)
     return res.status(401).json({ message: 'Invalid token' })
   }
 }

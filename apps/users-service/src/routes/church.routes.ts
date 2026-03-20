@@ -87,6 +87,41 @@ router.get('/searchCommunities', async (req: Request, res: Response) => {
   }
 })
 
+// Search A Zone
+router.get('/searchZones', async (req: Request, res: Response) => {
+  const q = (req.query.q as string) || ''
+  const communityId = req.query.communityId as string
+
+  try {
+    const zone = await prisma.zone.findMany({
+      where: {
+        AND: [
+          {
+            name: {
+              contains: q,
+              mode: 'insensitive',
+            },
+          },
+          {
+            communityId: communityId,
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        communityId: true,
+      },
+      take: 10,
+    })
+
+    res.json(zone)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
 // Create A New Team
 router.post('/addTeam', async (req: Request, res: Response) => {
   const { name, leaderId, description } = req.body
@@ -123,7 +158,7 @@ router.post('/addTeam', async (req: Request, res: Response) => {
   }
 })
 
-// Create A New Team
+// Create A New Department
 router.post('/addDepartment', async (req: Request, res: Response) => {
   const { name, leaderId, churchTeamId, email, description } = req.body
 
@@ -257,6 +292,48 @@ router.post('/addZone', async (req: Request, res: Response) => {
     })
 
     res.status(201).json(zone)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server Error' })
+  }
+})
+
+// Add A Cell
+router.post('/addCell', async (req: Request, res: Response) => {
+  const { name, leaderId, zoneId, communityId } = req.body
+
+  if (!name || !leaderId) {
+    return res
+      .status(400)
+      .json({ message: 'cell needs name, zone and cell leader' })
+  }
+
+  try {
+    const leader = await prisma.user.findUnique({ where: { id: leaderId } })
+    if (!leader) {
+      return res.status(404).json({ message: 'Leader not found' })
+    }
+    const zone = await prisma.zone.findUnique({
+      where: { id: zoneId },
+      select: {
+        id: true,
+        communityId: true,
+      },
+    })
+    if (!zone) {
+      return res.status(404).json({ message: 'Zone not found' })
+    }
+
+    const cell = await prisma.cell.create({
+      data: {
+        name,
+        leaderId,
+        zoneId: zone.id,
+        communityId: zone.communityId,
+      },
+    })
+
+    res.status(201).json(cell)
   } catch (err) {
     console.error(err)
     res.status(500).json({ message: 'Server Error' })
