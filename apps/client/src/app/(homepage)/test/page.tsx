@@ -1,9 +1,14 @@
-// import TestUser from '@/components/TestUser'
-import { getCurrentUser } from '@/src/lib/getCurrentUser'
+'use client'
 
-const Test = async () => {
-  const user = await getCurrentUser()
+import { useCurrentUser } from '@/src/hooks/useCurrentUser'
+import { useUserByEmail } from '@/src/hooks/useUserByEmail'
+
+const Test = () => {
+  const { data: user, isLoading, error } = useCurrentUser()
   // console.log('user:', user)
+
+  if (isLoading) return <p className='pt-40'>Loading...</p>
+  if (error || !user) return <p className='pt-40'>User not found</p>
 
   return (
     <div className='pt-40 pb-20 text-center'>

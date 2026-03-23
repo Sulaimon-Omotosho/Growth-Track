@@ -12,14 +12,25 @@ import { LogOut, Settings, User } from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
+import {useCurrentUser} from '../hooks/useCurrentUser'
+import {Loader} from 'lucide-react'
 
-const Profile = ({ image, role }: { image: string; role: string }) => {
+const Profile = () => {
+  const {data: user, isLoading, error} = useCurrentUser()
+
+  // FIX ANIMATION
+  if (isLoading) {
+    return <div className='animate-rotate'> <Loader />  </div>
+  }
+
+  if (error || !user ) return <TriangleAlert/>
+  
   return (
     <div>
       <DropdownMenu>
         <DropdownMenuTrigger>
           <Avatar>
-            <AvatarImage src={image} />
+            <AvatarImage src={user.image || ''} />
 
             <AvatarFallback>
               <User className='h-6 w-6 m-2' />
@@ -27,7 +38,7 @@ const Profile = ({ image, role }: { image: string; role: string }) => {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent sideOffset={10}>
-          <DropdownMenuLabel>{role}</DropdownMenuLabel>
+          <DropdownMenuLabel>{user.role || null}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
             <Link href='/dashboard' className='flex gap-2'>

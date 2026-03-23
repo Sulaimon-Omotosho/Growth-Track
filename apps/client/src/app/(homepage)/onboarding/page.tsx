@@ -1,27 +1,17 @@
+'use client'
+
 import { redirect } from 'next/navigation'
 import Onboarding from '@/src/components/forms/Onboarding'
-import { getCachedSession } from '@/src/lib/auth'
+import { useCurrentUser } from '@/src/hooks/useCurrentUser'
 
-export default async function OnboardingPage() {
-  const session = await getCachedSession()
+export default function OnboardingPage() {
+  const { data: user, isLoading, error } = useCurrentUser()
 
-  if (!session) redirect('/sign-in')
+  if (isLoading) return <p className='pt-40'>Loading...</p>
+  if (error || !user) return <p className='pt-40'>User not found</p>
 
-  const res = await fetch(`http://localhost:8001/users/${session.user.email}`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-    },
-    cache: 'no-store',
-  })
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch user')
-  }
-
-  const user = await res.json()
-
-  if (user.username) {
-    redirect('/user')
+  if (user!.username) {
+    redirect('/dashboard')
   }
 
   return (
@@ -30,7 +20,7 @@ export default async function OnboardingPage() {
         <h1 className='font-bold text-xl mt-4 text-center'>
           Complete your profile
         </h1>
-        <Onboarding user={user} accessToken={session.accessToken!} />
+        <Onboarding user={user!} />
       </section>
     </section>
   )

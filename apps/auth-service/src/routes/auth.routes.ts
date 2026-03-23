@@ -212,4 +212,27 @@ router.post('/refresh', async (req: Request, res: Response) => {
   }
 })
 
+// UPDATE ROLE
+router.patch(
+  '/users/:id/role',
+  // authenticate,
+  async (req: Request, res: Response) => {
+    // optional: restrict to only ADMIN
+
+    const { role } = req.body
+    const userId = req.params.id
+
+    try {
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: { role },
+      })
+
+      return res.json(updatedUser)
+    } catch (err) {
+      return res.status(500).json({ message: 'Failed to update auth role' })
+    }
+  },
+)
+
 export default router

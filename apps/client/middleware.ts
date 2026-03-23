@@ -1,31 +1,79 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
-import type { NextRequest } from 'next/server'
+
+const PUBLIC_ROUTES = ['/sign-in', '/sign-up']
+const ONBOARDING_ROUTE = '/onboarding'
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req })
   const { pathname } = req.nextUrl
+   console.log('MIDDLEWARE HIT:', req.nextUrl.pathname)
 
-  // Not logged in
-  if (!token && pathname.startsWith('/dashboard')) {
+  // 🔑 Get token from NextAuth
+  const token = await getToken({
+    req,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
+
+  // 🚫 Not logged in
+  if (!token) {
+    if (PUBLIC_ROUTES.includes(pathname)) {
+      return NextResponse.next()
+    }
+
     return NextResponse.redirect(new URL('/sign-in', req.url))
   }
 
-  // Logged in but not onboarded
-  if (token && pathname !== '/onboarding') {
+  // ✅ Logged in → fetch user from users-service
+  try {
     const res = await fetch(
-      `http://localhost:8001/users/by-email/${token.email}`,
+      `${process.env.USERS_SERVICE_URL}/users/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.accessToken}`,
+        },
+      }
     )
+
+    // ❌ user not found / invalid
+    if (!res.ok) {
+      return NextResponse.redirect(new URL('/sign-in', req.url))
+    }
+
     const user = await res.json()
 
-    if (!user.username) {
-      return NextResponse.redirect(new URL('/onboarding', req.url))
+    // 🚧 If onboarding not complete
+    if (!user.username && pathname !== ONBOARDING_ROUTE) {
+      return NextResponse.redirect(new URL(ONBOARDING_ROUTE, req.url))
     }
-  }
 
-  return NextResponse.next()
+    // 🔒 Prevent going back to onboarding
+    if (user.username && pathname === ONBOARDING_ROUTE) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+
+    // 🚫 Prevent accessing auth pages when logged in
+    if (PUBLIC_ROUTES.includes(pathname)) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+
+    return NextResponse.next()
+  } catch (error) {
+    console.error('Middleware error:', error)
+    return NextResponse.redirect(new URL('/sign-in', req.url))
+  }
 }
 
+// export const config = {
+//   matcher: ['/dashboard/:path*', '/redirect', '/onboarding'],
+// }
 export const config = {
-  matcher: ['/dashboard/:path*', '/redirect', '/onboarding'],
+  matcher: [
+    /*
+     * Apply to all routes except:
+     * - api
+     * - static files
+     * - images
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
 }

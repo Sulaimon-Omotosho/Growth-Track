@@ -6,19 +6,29 @@ export default async function RedirectPage() {
 
   if (!session) redirect('/sign-in')
 
-  // fetch user profile from user-service
-  const res = await fetch(`http://localhost:8001/users/${session.user.email}`, {
-    headers: {
-      Authorization: `Bearer ${session.accessToken}`,
-    },
-    cache: 'no-store',
-  })
+  try {
+    // const res = await fetch(
+    //   `${process.env.USERS_SERVICE_URL}/users/byEmail?email=${encodeURIComponent(
+    //     session.user.email!,
+    //   )}`,
+    const res = await fetch(`${process.env.USERS_SERVICE_URL}/users/me}`, {
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+      cache: 'no-store',
+    })
 
-  const user = await res.json()
+    const user = await res.json()
+    console.log('redirect:', user);
+    
 
-  if (!user.username) {
-    redirect('/onboarding')
+    if (!user.username) {
+      redirect('/onboarding')
+    }
+
+    redirect('/dashboard')
+  } catch (error) {
+    console.error('Redirect error:', error)
+    redirect('/sign-in')
   }
-
-  redirect('/dashboard')
 }

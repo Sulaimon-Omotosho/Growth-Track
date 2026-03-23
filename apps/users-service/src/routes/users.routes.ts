@@ -6,6 +6,7 @@ import {
 } from 'express'
 import { prisma } from '@repo/users-db'
 import { authenticate, AuthRequest } from '../middleware/auth.middleware.js'
+import axios from 'axios'
 
 const router: ExpressRouter = Router()
 
@@ -187,7 +188,8 @@ router.patch('/me', authenticate, async (req: AuthRequest, res) => {
 
 // Get By Email
 router.get('/byEmail', async (req: Request, res: Response) => {
-  const email = req.params.email as string
+  const email = req.query.email as string
+  // const email = req.params.email as string
 
   if (!email) {
     return res.status(400).json({ message: 'Email is required' })
@@ -197,6 +199,7 @@ router.get('/byEmail', async (req: Request, res: Response) => {
     where: { email },
     select: {
       id: true,
+      authId: true,
       email: true,
       username: true,
       firstName: true,
@@ -215,6 +218,7 @@ router.get('/byEmail', async (req: Request, res: Response) => {
   return res.json(user)
 })
 
+// DEBUG
 router.get('/debug/users', async (req, res) => {
   const users = await prisma.user.findMany({
     select: {
@@ -251,5 +255,55 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 
   res.json(user)
 })
+
+// Update Role
+router.patch(
+  '/:id/role',
+  authenticate,
+  async (req: AuthRequest, res: Response) => {
+    const requesterRole = req.user?.role
+    const targetUserId = req.params.id
+    const { role } = req.body
+
+    const allowedRoles = [
+      'ADMIN',
+      'CAMPUS_PASTOR',
+      'PASTOR',
+      'TEAM',
+      'HOD',
+      'DISTRICT',
+      'ZONE',
+    ]
+
+    if (!allowedRoles.includes(requesterRole!)) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+
+    try {
+      const updatedRole = await prisma.user.update({
+        where: { id: targetUserId as string },
+        data: { role },
+      })
+
+      const newAuthRole = allowedRoles.includes(role) ? 'ADMIN' : 'USER'
+
+      // Call auth-service
+      await axios.patch(
+        `${process.env.AUTH_SERVICE_URL}/auth/users/${updatedRole.authId}/role`,
+        { role: newAuthRole },
+        {
+          headers: {
+            Authorization: req.headers.authorization,
+          },
+        },
+      )
+
+      return res.json(updatedRole)
+    } catch (err) {
+      console.error(err)
+      return res.status(500).json({ message: 'Failed to update role' })
+    }
+  },
+)
 
 export default router

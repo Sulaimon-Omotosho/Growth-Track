@@ -1,7 +1,18 @@
 import z from 'zod'
 
 export const GenderEnum = z.enum(['MALE', 'FEMALE'])
-export const RoleEnum = z.enum(['ADMIN', 'PASTOR', 'LEADER', 'MEMBER'])
+export const RoleEnum = z.enum([
+  'ADMIN',
+  'PASTOR',
+  'LEADER',
+  'CELL',
+  'ZONE',
+  'DISTRICT',
+  'HOD',
+  'TEAM',
+  'CAMPUS_PASTOR',
+  'MEMBER',
+])
 export const ModeEnum = z.enum(['login', 'signup'])
 
 export const UserFormSchema = z.object({
@@ -51,6 +62,10 @@ export const UserFormSchema = z.object({
   // districtId: z.string().uuid().optional(),
   // communityId: z.string().uuid().optional(),
   // zoneId: z.string().uuid().optional(),
+})
+
+export const RoleChangeSchema = z.object({
+  role: RoleEnum.optional(),
 })
 
 export const AuthFormSchema = z.object({

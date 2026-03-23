@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
 
 export interface User {
   id: string
+  authId?: string
   firstName: string
   lastName: string
   username?: string

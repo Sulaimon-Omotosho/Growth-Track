@@ -7,7 +7,7 @@ import Profile from './Profile'
 import { User } from '@repo/types'
 import { getCachedSession } from '../lib/auth'
 
-const Navbar = async ({ user }: { user?: User }) => {
+const Navbar = async () => {
   const session = await getCachedSession()
 
   return (
@@ -35,8 +35,8 @@ const Navbar = async ({ user }: { user?: User }) => {
             <Home className='w-6 h-6 md:hidden ' />
             <p className='hidden md:block font-bold'>Home</p>
           </Link>
-          {session?.user && user ? (
-            <Profile role={user.role} image={user?.image || ''} />
+          {session?.user ? (
+            <Profile />
           ) : (
             <Link
               href='/sign-in'

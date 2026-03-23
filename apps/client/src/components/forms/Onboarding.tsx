@@ -7,23 +7,14 @@ import z from 'zod'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import SubmitButton from '../SubmitButton'
 import { FieldGroup, Field, FieldError, FieldLabel } from '../ui/field'
 import { Input } from '../ui/input'
+import { useUpdateProfile } from '@/src/hooks/useUpdateProfile'
 
-const usersUrl = process.env.NEXT_PUBLIC_USERS_SERVICE_URL
-console.log('before:', usersUrl)
-
-const Onboarding = ({
-  user,
-  accessToken,
-}: {
-  user: User
-  accessToken: String
-}) => {
+const Onboarding = ({ user }: { user: User }) => {
+  const { mutate, isPending } = useUpdateProfile()
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
 
   const form = useForm<z.input<typeof UserFormSchema>>({
     resolver: zodResolver(UserFormSchema),
@@ -39,35 +30,16 @@ const Onboarding = ({
     },
   })
 
-  async function onSubmit(data: z.output<typeof UserFormSchema>) {
-    setLoading(true)
-    // console.log('User Form', data)
-
-    try {
-      const res = await fetch('http://localhost:8001/users/me', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          ...data,
-          dob: data.dob ? new Date(data.dob).toISOString() : undefined,
-        }),
-      })
-
-      setLoading(false)
-
-      if (!res.ok) {
-        throw new Error('failed to update profile')
-      }
-
-      const updatedUser = await res.json()
-      // console.log('Updated User:', updatedUser)
-      router.push('/dashboard')
-    } catch (error) {
-      console.error(error)
-    }
+  function onSubmit(data: z.output<typeof UserFormSchema>) {
+    console.log('User Form', data)
+    mutate(data, {
+      onSuccess: () => {
+        router.push('/dashboard')
+      },
+      onError: (error) => {
+        console.error(error)
+      },
+    })
   }
 
   return (
@@ -169,13 +141,8 @@ const Onboarding = ({
               </Field>
             )}
           />
-          <SubmitButton isLoading={loading}>Update</SubmitButton>
+          <SubmitButton isLoading={isPending}>Update</SubmitButton>
         </FieldGroup>
-        {/* <Field orientation='horizontal'>
-          <Button type='submit' className='w-full' form='profile-edit'>
-            Submit
-          </Button>
-        </Field> */}
       </form>
     </div>
   )

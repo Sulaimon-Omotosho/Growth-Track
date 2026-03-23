@@ -11,6 +11,7 @@ import MessageCard from '@/src/components/dashboard/MessageCard'
 
 const UserDashboard = () => {
   const { user } = useUser()
+  
 
   return (
     <div className='px-4 md:px-6 py-6'>
