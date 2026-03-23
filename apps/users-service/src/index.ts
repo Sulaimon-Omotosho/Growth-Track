@@ -3,6 +3,8 @@ import cors from 'cors'
 import usersRoutes from './routes/users.routes.js'
 import churchRoutes from './routes/church.routes.js'
 
+const PORT = process.env.PORT || 8001
+
 const app = express()
 app.use(express.json())
 
@@ -33,6 +35,7 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/users', usersRoutes)
 app.use('/church', churchRoutes)
 
-app.listen(8001, () => {
-  console.log('User Service is running on port 8001')
+// app.listen(8001, () => {
+app.listen(PORT, () => {
+  console.log(`User Service is running on port ${PORT}`)
 })

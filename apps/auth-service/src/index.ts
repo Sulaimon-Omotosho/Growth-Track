@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express'
 import cors from 'cors'
 import authRoutes from './routes/auth.routes'
 
+const PORT = process.env.PORT || 8000
+
 const app = express()
 
 app.use(express.json())
@@ -22,6 +24,7 @@ app.get('/health', (_req: Request, res: Response) => {
 
 app.use('/auth', authRoutes)
 
-app.listen(8000, () => {
-  console.log('Auth service is running on port 8000')
+// app.listen(8000, () => {
+app.listen(PORT, () => {
+  console.log(`Auth Service is running on port ${PORT}`)
 })
