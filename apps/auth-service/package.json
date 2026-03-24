@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^7.4.1",
     "@repo/auth-db": "workspace:*",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

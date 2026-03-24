@@ -123,6 +123,9 @@ importers:
 
   apps/auth-service:
     dependencies:
+      '@prisma/client':
+        specifier: ^7.4.1
+        version: 7.4.1(prisma@7.4.1(@types/react@19.2.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
       '@repo/auth-db':
         specifier: workspace:*
         version: link:../../packages/auth-db
@@ -5841,6 +5844,13 @@ snapshots:
     optionalDependencies:
       prisma: 7.4.1(@types/react@19.2.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.2)
       typescript: 5.9.2
+
+  '@prisma/client@7.4.1(prisma@7.4.1(@types/react@19.2.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)':
+    dependencies:
+      '@prisma/client-runtime-utils': 7.4.1
+    optionalDependencies:
+      prisma: 7.4.1(@types/react@19.2.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
+      typescript: 5.9.3
 
   '@prisma/config@7.4.1':
     dependencies:
