@@ -4,22 +4,25 @@ import usersRoutes from './routes/users.routes.js'
 import churchRoutes from './routes/church.routes.js'
 
 const PORT = process.env.PORT || 8001
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3002', 'http://localhost:3003']
 
 const app = express()
-app.use(express.json())
 
+app.use(express.json())
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true)
-      return callback(null, origin)
-    },
+    origin: allowedOrigins,
     credentials: true,
   }),
 )
 // app.use(
 //   cors({
-//     origin: ['http://localhost:3002', 'http://localhost:3003'],
+//     origin: (origin, callback) => {
+//       if (!origin) return callback(null, true)
+//       return callback(null, origin)
+//     },
 //     credentials: true,
 //   }),
 // )

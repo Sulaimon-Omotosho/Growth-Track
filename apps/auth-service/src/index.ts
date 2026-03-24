@@ -3,13 +3,17 @@ import cors from 'cors'
 import authRoutes from './routes/auth.routes'
 
 const PORT = process.env.PORT || 8000
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3002', 'http://localhost:3003']
 
 const app = express()
 
 app.use(express.json())
 app.use(
   cors({
-    origin: ['http://localhost:3002', 'http://localhost:3003'],
+    origin: allowedOrigins,
+    // origin: ['http://localhost:3002', 'http://localhost:3003'],
     credentials: true,
   }),
 )
