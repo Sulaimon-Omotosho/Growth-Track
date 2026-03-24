@@ -178,9 +178,6 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.2(react@19.2.3))
-      '@repo/auth-db':
-        specifier: workspace:*
-        version: link:../../packages/auth-db
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.90.21(react@19.2.3)
