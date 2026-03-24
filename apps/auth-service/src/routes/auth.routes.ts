@@ -224,7 +224,7 @@ router.patch(
 
     try {
       const updatedUser = await prisma.user.update({
-        where: { id: userId },
+        where: { id: userId as any },
         data: { role },
       })
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm dlx tsx --env-file=.env --watch src/index.ts",
     "check-types": "tsc --noEmit",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js"
   },
   "keywords": [],
@@ -21,13 +21,14 @@
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@repo/types": "workspace:*",
-    "@types/express": "^5.0.6",
-    "@types/node": "^25.3.0",
-    "@types/jsonwebtoken": "^9.0.10",
+    "@repo/typescript-config": "workspace:*",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.3.0",
+    "prisma": "^7.4.1",
     "ts-node-dev": "^2.0.0"
   }
 }

@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "pnpm dlx tsx --env-file=.env --watch src/index.ts",
     "check-types": "tsc --noEmit",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js"
   },
   "keywords": [],
