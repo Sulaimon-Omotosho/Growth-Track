@@ -8,23 +8,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, TriangleAlert, User } from 'lucide-react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import {useCurrentUser} from '../hooks/useCurrentUser'
-import {Loader} from 'lucide-react'
+import { useCurrentUser } from '../hooks/useCurrentUser'
+import { Loader } from 'lucide-react'
 
 const Profile = () => {
-  const {data: user, isLoading, error} = useCurrentUser()
+  const { data: user, isLoading, error } = useCurrentUser()
 
   // FIX ANIMATION
   if (isLoading) {
-    return <div className='animate-rotate'> <Loader />  </div>
+    return (
+      <div className='animation-rotate'>
+        <Loader />
+      </div>
+    )
   }
 
-  if (error || !user ) return <TriangleAlert/>
-  
+  if (error || !user) return <TriangleAlert />
+
   return (
     <div>
       <DropdownMenu>

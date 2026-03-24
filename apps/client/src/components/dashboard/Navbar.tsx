@@ -14,7 +14,8 @@ const Navbar = async ({ user }: { user: User }) => {
         {/* USER MENU */}
         {/* <Bell className='h-6 w-6 m-2' /> */}
         <Notification />
-        {user ? <Profile role={user.role} image={user.image || ''} /> : null}
+        {user ? <Profile /> : null}
+        {/* {user ? <Profile role={user.role} image={user.image || ''} /> : null} */}
         {/* THEME MENU */}
         <Theme />
       </div>

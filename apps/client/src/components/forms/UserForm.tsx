@@ -49,7 +49,7 @@ const UserForm = ({ user }: { user: User }) => {
       username: user?.username ?? '',
       email: user?.email ?? '',
       phone: user?.phone ?? '',
-      gender: user?.gender ?? 'MALE',
+      gender: (user?.gender as any) ?? 'MALE',
       dob: user.dob ? new Date(user.dob).toISOString().slice(0, 10) : undefined,
       about: user?.about ?? '',
     },

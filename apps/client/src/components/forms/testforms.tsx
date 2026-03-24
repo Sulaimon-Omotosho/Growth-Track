@@ -5,13 +5,14 @@ import React, { useState } from 'react'
 import SubmitButton from '../SubmitButton'
 import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
-import { UserFormSchema, UserLoginSchema, UserSignUpSchema } from '@repo/types'
+import { AuthFormSchema, UserFormSchema, UserSignUpSchema } from '@repo/types'
 import z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 
 const AuthSchema = z.discriminatedUnion('mode', [
-  UserLoginSchema.extend({ mode: z.literal('login') }),
+  // UserLoginSchema.extend({ mode: z.literal('login') }),
+  AuthFormSchema.extend({ mode: z.literal('login') }),
   UserSignUpSchema.extend({ mode: z.literal('signup') }),
 ])
 
