@@ -27,8 +27,8 @@ const AuthForm = () => {
     resolver: zodResolver(AuthFormSchema),
     defaultValues: {
       mode: 'login',
-      email: 'johndoe@church.com',
-      password: 'password123',
+      email: '',
+      password: '',
     },
   })
 
@@ -53,7 +53,7 @@ const AuthForm = () => {
     }
 
     if (data.mode === 'signup') {
-      const res = await fetch('http://localhost:8000/auth/register', {
+      const res = await fetch(`${NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, password: data.password }),
