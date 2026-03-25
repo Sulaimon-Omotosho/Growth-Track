@@ -53,11 +53,14 @@ const AuthForm = () => {
     }
 
     if (data.mode === 'signup') {
-      const res = await fetch(`${NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: data.email, password: data.password }),
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/register`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: data.email, password: data.password }),
+        },
+      )
 
       if (!res.ok) {
         const err = await res.json().catch(() => null)
